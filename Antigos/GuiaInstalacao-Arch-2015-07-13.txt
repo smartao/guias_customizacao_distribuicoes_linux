@@ -1,0 +1,522 @@
+Arch 2015-07.13
+
+Guias de instalação: 
+https://wiki.archlinux.org/index.php/Installation_guide
+https://wiki.archlinux.org/index.php/Beginners'_guide
+http://goo.gl/PKmQu (Build a Killer Customized Arch Linux Installation)
+
+Guia de pós instalação
+https://wiki.archlinux.org/index.php/List_of_applications
+https://wiki.archlinux.org/index.php/General_recommendations
+
+XFCE Arch
+https://wiki.archlinux.org/index.php/Xfce
+https://www.howtoforge.com/tutorial/arch-linux-installation-with-xfce-desktop/2/
+
+Tunning
+https://wiki.archlinux.org/index.php/Maximizing_performance
+https://wiki.archlinux.org/index.php/Benchmarking
+
+Artigos
+http://www.vivaolinux.com.br/dica/Arredondando-o-Arch-Linux
+http://www.vivaolinux.com.br/artigo/Mamae-quero-Arch-(parte-1)/?pagina=5
+http://www.vivaolinux.com.br/artigo/Mamae-quero-Arch-(parte-2-final)?pagina=1
+
+1.0 Download e mídia
+1.1 Fazer download do ISO do arch
+https://www.archlinux.org/download/
+
+1.2 Criar um pendrive bootavel com o iso do arch
+sudo dd bs=4M if=/home/sergei/ISOs/Linux/Archlinux-2015.07.01-dual.iso of=/dev/sdc && sync
+sendo o sdc o pendrive.
+
+2.0 Pré instalação
+
+2.1 Configurar layout do teclado
+loadkeys /usr/share/kbd/keymaps/i386/qwerty/br-abnt2.map.gz
+Mais sobre o assunto: https://goo.gl/VmR7vc
+
+2.2 Partition the disks
+# Separando espaço para partição /boot
+fdisk /dev/sda 	# formatando o disco /dev/sda
+n 		# nova partição
+p 		# partição primária
+tecle enter 	# primeiro setor usar inicio do disco
++300M 	# 300 MB para o tamanho partição boot
+t 		# para alterar o tipo de partição
+83 		# selecionando o tipo 83 que é padrão linux. Use L para listar
+w 		# para salvar as alterações
+
+# Criando partição estendida
+fdisk /dev/sda 	# formatando o disco /dev/sda
+n 		# nova partição
+e 		# partição primária
+tecle enter 	# primeiro setor usar inicio depois da partição primária
+tecle enter 	# usar o disco inteiro com partição estendida
+w 		# para salvar as alterações
+
+# Criando partição /
+fdisk /dev/sda 	# formatando o disco /dev/sda
+n 		# nova partição
+tecle enter 	# primeiro setor usar inicio do disco da partição estendida
++12G		# 12 GB para o tamanho partição /
+t 		# para alterar o tipo de partição
+83 		# selecionando o tipo 83 que é padrão linux. Use L para listar
+w 		# para salvar as alterações
+
+# Criando partição /tmp
+fdisk /dev/sda 	# formatando o disco /dev/sda
+n 		# nova partição
+tecle enter 	# primeiro setor usar inicio do disco da partição estendida
++1G		# 1 GB para o tamanho partição /
+t 		# para alterar o tipo de partição
+83 		# selecionando o tipo 83 que é padrão linux. Use L para listar
+w 		# para salvar as alterações
+
+# Criando partição swap
+fdisk /dev/sda 	# formatando o disco /dev/sda
+n 		# nova partição
+tecle enter 	# primeiro setor usar inicio do disco da partição estendida
++2G		# 2 GB para o tamanho partição /
+t 		# para alterar o tipo de partição
+82		# selecionando o tipo 82 padrão de swap linux. Use L para listar
+w 		# para salvar as alterações
+
+2.3 Formatar partições
+lsblk 			# listar partições
+mkfs.ext4 /dev/sda1 	# formatar para ext4 a partição sda1 /boot
+mkfs.ext4 /dev/sda5 	# formatar para ext4 a partição sda5 /
+mkfs.ext4 /dev/sda6 	# formatar para ext4 a partição sda6 /tmp
+mkswap /dev/sda7	# formatar para swap a partição sda7
+
+2.4 Mount the partitions
+# Criar diretórios das partições
+mkdir -p /mnt/boot
+mkdir -p /mnt/tmp
+
+# Montar a partições 
+mount /dev/sda1 /mnt/boot
+mount /dev/sda5 /mnt
+mount /dev/sda6 /mnt/tmp
+
+# Ativar partição de swap
+swapon /dev/sda7
+
+2.5 Connect to the Internet
+Virtual box conecta automaticamente na internet…
+
+# Ativar o daemon de dhcp
+systemctl start dhcpcd.service
+
+2.6 Update the hardware clock
+
+# Encontrar zonas de fuso horário disponível
+timedatectl list-timezones | grep -i “nome da zona”
+
+# Utilizar zona de São Paulo
+timedatectl set-timezone America/Sao_Paulo
+
+# Sincronizar data e hora manualmente
+ntpd -qg
+
+Sobre: https://goo.gl/dpz4y
+
+3 Installation
+
+3.1 Select the mirrors
+# Fazer backup do mirror list
+cp  /etc/pacman.d/mirrorlist  /etc/pacman.d/mirrorlist.ori
+
+# Editar o arquivo
+vim /etc/pacman.d/mirrorlist
+
+# E escolher quais mirrors deseja utilizar.
+Deixado apenas 10, 7 primeiros e os 3 ultimos do brazil
+
+Sobre mirror.list
+https://wiki.archlinux.org/index.php/Mirrors
+
+3.2 Install the base packages
+
+# Para instalar a base do sistema execute
+pacstrap -i /mnt base base-devel
+
+3.3 Configure the system
+
+# Gerar fstab
+genfstab -U -p /mnt >> /mnt/etc/fstab
+cat /mnt/etc/fstab
+
+# Configurar chroot
+arch-chroot /mnt /bin/bash
+
+# Configurar hostname 
+echo computer_name > /etc/hostname
+
+# Configurar a timezone de São paulo
+ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
+
+# Instalar o vim 
+pacman -S vim
+
+#Configurar Vim (Com root)
+echo set background=dark >> /etc/vimrc
+echo syntax enable >> /etc/vimrc
+
+#Editar o locales, descomentar linha pt_BR.utf8
+vim /etc/locale.gen
+
+# Gerar locales
+locale-gen
+
+# Criar arquivo de configuração de linguagem
+echo LANG=pt_BR.utf8 > /etc/locale.conf
+
+# Exportar locale
+export LANG=pt_BR.utf8
+
+# Configurar layout do teclado para ficar permanente 
+echo KEYMAP=br-abnt2 > /etc/vconsole.conf 
+Sobre: https://goo.gl/Si0FY1
+
+# Configurar arquivo /etc/hosts
+#<ip-address> <hostname.domain.org> <hostname>
+127.0.0.1 localhost.localdomain localhost myhostname
+::1   localhost.localdomain localhost myhostname
+
+# Configurar senha do root
+passwd root
+
+# Gerar novamente imagem com mkinitcpio 
+mkinitcpio -p linux
+
+3.4 Install a bootloader
+
+# Instalar grub
+pacman -S grub os-prober
+
+# Configurar grub para verificar disco sda
+grub-install --recheck /dev/sda
+
+# Gerar grub.cfg
+grub-mkconfig -o /boot/grub/grub.cfg
+
+3.5 Reboot
+
+# Sair do chroot
+exit
+
+# Desmontar partições, para não aparecer mensagem de ocupado
+umount -R /mnt
+
+#Reiniciar
+reboot
+
+4 Post-installation
+
+#Ativar serviço de dhcp e manter serviço habilitado após o boot
+systemctl start dhcpcd.service
+systemctl enable dhcpcd.service
+
+# Instalar ferramentar de placa de rede (ifconfig)
+pacman -S net-tools
+
+# Ativar repositório multilib editar arquivo /etc/pacman.conf e descomentar linhas
+[multilib]
+Include = /etc/pacman.d/mirrorlist
+
+# Criar usuário no grupo de administração sudo e no de usuários comuns
+useradd -m -g users -G storage,power,wheel -s /bin/bash sergei
+
+# Definir senha
+passwd sergei
+
+# Definir informações detalhadas do usuário (nome completo) 
+chfn sergei
+Obs: As vezes ao executar comando com sudo a solicitação de senha pode cobrir o campo de nome.
+
+Sobre usuários e grupos
+https://wiki.archlinux.org/index.php/Users_and_groups
+https://wiki.archlinux.org/index.php/Change_username
+
+# Instalar sudo
+pacman -S sudo
+
+#Configurar grupo wheel para administração, descomentar linha
+wheel ALL=(ALL) ALL
+
+# Instalar sshserver
+pacman -S openssh
+
+# Configurar ssh
+Descomentar as linhas do arquivo /etc/ssh/sshd_config
+13:Port 22
+14:AddressFamily any
+15:ListenAddress 0.0.0.0
+19:Protocol 2
+38:SyslogFacility AUTH
+39:LogLevel INFO
+permissar com login do root NO
+
+#Reiniciar serviço e habilitar no boot
+systemctl restart sshd && systemctl enable sshd 
+
+# instalar o yaourt
+Editar o arquivo /etc/pacman.conf, adiconar
+
+[archlinuxfr]
+SigLevel = Never
+Server = http://repo.archlinux.fr/$arch
+
+# Instalar o yaourt
+sudo pacman -Sy yaourt
+
+# Instalar Driver Wireless
+yaourt -S b43-firmware
+reboot
+
+https://wiki.archlinux.org/index.php/Broadcom_wireless (notebook dell 1320)
+
+# Instalar software para conectar na wireless por linha de comando
+sudo pacman -S iw wpa_supplicant dialog
+
+# Conectar na wireless, profile deve ter apenas letras (exemplo wlandracena)
+sudo wifi-menu
+
+# Derrubar interface wireless
+sudo ip link set wlan0 down
+
+# Conectar no perfil criado
+netctl start wlandracena
+
+# Verificar se serviço esta no ativado
+sudo systemctl status netctl@wlandracena.service
+
+# Habilitar serviço automaticamente
+netctl enable profile
+
+# reiniciar para validar as configurações
+sudo reboot
+
+# Sobre 
+https://wiki.archlinux.org/index.php/Wireless_network_configuration
+https://wiki.archlinux.org/index.php/Netctl
+https://wiki.archlinux.org/index.php/WPA_supplicant
+
+# Instalar X windows
+sudo pacman -S xorg-server xorg-xinit xorg-server-utils
+
+# Sobre drivers nvidia
+GeForce 400 series cards and newer [NVCx and newer], install the nvidia or nvidia-lts package along with nvidia-libgl.
+GeForce 8000/9000 and 100-300 series cards [NV5x, NV8x, NV9x and NVAx] from around 2006-2010, install the nvidia-340xx or nvidia-340xx-lts package along with nvidia-340xx-libgl.
+GeForce 6000/7000 series cards [NV4x and NV6x] from around 2004-2006, install the nvidia-304xx or nvidia-304xx-lts package along with nvidia-304xx-libgl.
+Sobre https://wiki.archlinux.org/index.php/NVIDIA
+
+# Habilitar suporte a acelaração 3D basico
+sudo pacman -S mesa
+
+# Para virutal box!
+# instalar adicionar de convidado, necessário para carregar o ambiente gráfico
+pacman -S virtualbox-guest-utlis
+Sobre: https://wiki.archlinux.org/index.php/VirtualBox#Installation_steps_for_Arch_Linux_guests
+
+# Instalar ambiente gráfico basico
+sudo pacman -S xorg-twm xorg-xclock xterm
+
+#Copiar xinitrc 
+cp /etc/X11/xinit/xinitrc ~/.xinitrcstartx
+
+# Mudar permissão
+chmod 755 ~/.xinitrcstartx
+
+Sobre: https://wiki.archlinux.org/index.php/Xinitrc
+
+# Testar funcionamento
+startx
+Obs:
+Para sair digitar exit nos terminais
+Caso de erro de display, quer dizer que não esta reconhecendo o driver de video
+
+Sobre
+https://wiki.archlinux.org/index.php/Xinitrc
+https://wiki.archlinux.org/index.php/Xorg 
+
+# Instalar XFCE
+sudo pacman -S xfce4 xfce4-goodies 
+
+# Configurar depois para remover o que não é necessário no xfce4-goodies.
+
+Editar o arquivo ~/.xinitrcstartx
+
+Comentar linhas
+#twm &
+#xclock -geometry 50x50-1+1 &
+#xterm -geometry 80x50+494+51 &
+#xterm -geometry 80x20+494-0 &
+#exec xterm -geometry 80x66+0+0 -name login
+
+Adicionar linha
+exec startxfce4
+
+# Instalação do light locker para bloqueio
+sudo pacman -S light-locker 
+
+# Instalar Greeter para o lightdm e as configurações
+sudo pacman -S lightdm-gtk-greeter && yaourt -S lightdm-gtk-greeter-settings
+
+# Habilitando o lightdm para iniciar junto com o sistema
+sudo systemctl enable lightdm
+
+Sobre Display manager similares ao lightdm 
+https://wiki.archlinux.org/index.php/Display_manager#Graphical
+Sobre o lightdm
+https://wiki.archlinux.org/index.php/LightDM
+Forum com instalação
+https://goo.gl/HDWFKN
+
+Instalar pacote extra do xorg para testar o lighdm
+sudo pacman -S xorg-server-xephyr 
+
+#Testar o lightdm
+lightdm --test-mode --debug
+
+# Instalar driver de vídeo NVIDIA sério 9000
+sudo pacman -S nvidia-340xx nvidia-340xx-libgl
+
+# Instalar fontes
+sudo pacman -S ttf-dejavu ttf-bitstream-vera 
+
+Sobre: Instalar fontes MS
+Pacotes AUR 
+ttf-Win7-fonts 
+ttf-office-2007-fonts 
+ttf-ms-win8 
+https://wiki.archlinux.org/index.php/Microsoft_fonts
+
+# Instalar Trackpad (se for notebook)
+sudo pacman -S xf86-input-synaptics
+
+# Instalar sistema de som 
+sudo pacman -S alsa-lib alsa-utils alsa-oss 
+
+# Iniciar sistema
+alsamixer
+
+# Testar alsa
+speaker-test -c 2
+
+# Configurar layout de teclado no xorg para br temporariamente (para funciona ç e etc…)
+setxkbmap br
+
+Para manter as configurações após o boot, executar o comando
+localectl --no-convert set-x11-keymap br,us pc105 , terminate:ctrl_alt_bksp,grp:alt_shift_toggle
+
+Ira gerar o arquivo /etc/X11/xorg.conf.d/00-keyboard.conf deve ficar da seguinte forma
+Section "InputClass"
+ Identifier "system-keyboard"
+ MatchIsKeyboard "on"
+ Option "XkbLayout" "br,us"
+ Option "XkbModel" "pc105"
+ Option "XkbVariant" ","
+ Option "XkbOptions" "terminate:ctrl_alt_bksp,grp:alt_shift_toggle"
+EndSection
+
+Sobre
+https://wiki.archlinux.org/index.php/Keyboard_configuration_in_Xorg
+
+# Instalção de codecs
+gstreamer0.10-plugins
+
+# Instalção outros PESQUISAR
+ dbus fam 
+
+
+Instalando temas completa numix
+sudo pacman -S numix-themes 
+yaourt -S xcursor-numix numix-circle-icon-theme-git numix-icon-theme-square
+
+#Não funcionou
+xfce-theme-numix-extra-colors
+
+
+### instalação de softwares ###
+
+
+#Installar Chrome Chromium
+yaourt -S google-chrome && yaourt chromium-browser
+
+#Instalar apps de rede
+sudo pacman -S tcpdump iptraf-ng traceroute nmap openssh htop remmina freerdp wireshark-cli wireshark-gtk
+
+#Instalar apps multimidia
+sudo pacman -S youtube-dl picard lynx curl audacious && yaourt clipgrab
+
+#Instalar apps comuns
+sudo pacman -S vim guake docky keepass sysstat syslog-ng gsmartcontrol baobab qbittorrent variety dropbox dia unetbootin shutter wine playonlinux vince gns3 
+yaourt -S notepadqq &&  yaourt -S luckybackup && && yaourt -S diskscan-git && yaourt usb-creator && yaourt googletalk-plugin && yaourt  furiusisomount && yaourt pacmanxg 
+
+#Instalar Virtual box
+sudo pacman -S virtualbox virtualbox-guest-dkms virtualbox-guest-utils
+
+#Instalar Funny apps
+sudo pacman -S cmatrix cowsay && yaourt fortune-mod-br
+
+#Instalar Gdevelop
+Editar o arquivo /etc/pacman.conf
+
+Adicionar
+[home_victorlevasseur_Arch_Extra]
+SigLevel = Never
+Server = http://download.opensuse.org/repositories/home:/victorlevasseur/Arch_Extra/$arch
+
+pacman -Syu
+pacman -S home_victorlevasseur_Arch_Extra/gdevelop
+
+### Configurações ###
+
+# Solução de problemas, salvar no diigo
+#Audio
+Plugar e desplugar o microfone
+Mudar controles para Saida estéreo e depois Duplex estéreo
+
+#Muda nível de utilização de swap de 1 para 10
+sudo sysctl vm.swappiness=10
+
+#Editar o arquivo
+sudo vim /etc/sysctl.d/100-manjaro.conf
+Alterar valor para 10
+
+#Habilitar daemon syslog
+sudo systemctl enable syslog-ng && sudo systemctl start syslog-ng
+
+
+
+#Terminal colorido 
+usuário root (vermelho e azul)  #executar com root
+echo "PS1='[\[$(tput sgr0)\]\[\033[38;5;196m\]\u@\h\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;12m\]\w\[$(tput sgr0)\]\[\033[38;5;15m\]]\\$ \[$(tput sgr0)\]'" >> /root/.bashrc
+
+sergei (verde e azul) #executar com root
+echo "PS1='[\[$(tput sgr0)\]\[\033[38;5;10m\]\u@\h\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;12m\]\w\[$(tput sgr0)\]\[\033[38;5;15m\]]\\$ \[$(tput sgr0)\]'" >> /home/sergei/.bashrc 
+
+Fonte: http://bashrcgenerator.com/
+
+#Configurar bashrc
+Mudar editor padrão
+22:export EDITOR=/usr/bin/vim (se não existir criar)
+
+Alias
+alias cmatrix='cmatrix -b -u 9'
+alias limpamemoria='sudo swapoff -a && sudo swapon -a'
+
+#Configurar VPN BRQ
+Menu de rede proximo do relogio >> Conexões VPN >> Configurar VPN...
+
+Desabilitar placa de vídeo do notebook Dell 3550
+sudo echo > /etc/modprobe.d/radeon.conf blacklist\ radeon
+sudo echo "modprobe radeon" >> /etc/rc.local
+sudo echo "echo OFF > /sys/kernel/debug/vgaswitcheroo/switch" >> /etc/rc.local
+sudo echo "none /sys/kernel/debug debugfs defaults 0 0" >> etc/fstab
+mais informações procurar no diigo utilizando as tags: Linux Drivers Vídeo Radeon Hibrido Intel Bumblebee Soluções ATI Manjaro
+
+#Criar compartilhamento samba em public
+digitar samba em aplicativos, remover priters e criar um apontando para a pasta /home/smartao/publico

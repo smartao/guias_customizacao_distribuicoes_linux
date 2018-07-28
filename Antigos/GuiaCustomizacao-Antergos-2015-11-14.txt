@@ -1,0 +1,190 @@
+Antergos 2016.04.22 - XFCE
+
+### Instalação ### 
+
+#Instalar Google-chrome
+yaourt -S google-chrome 
+
+#Instalar complemento XFCE
+sudo pacman -S xfce4-goodies
+
+#Instalar apps de rede
+sudo pacman -S tcpdump iptraf-ng traceroute gufw nmap openssh htop remmina freerdp rsync wireshark-cli wireshark-gtk
+
+#Instalar apps multimidia
+sudo pacman -S youtube-dl picard lynx curl audacious moc vlc && yaourt clipgrab
+
+#Instalar apps comuns
+sudo pacman -S vim guake docky screenfetch keepass sysstat gsmartcontrol baobab variety synapse cmatrix inxi task catfish cronie bc insync dropbox qbittorrent dia unetbootin shuffle wine playonlinux vince 
+yaourt -S notepadqq-bin &&  yaourt -S luckybackup && yaourt -S xmind && yaourt -S insync && yaourt -S gns3-converter && yaourt  -S gns3-gui && yaourt -S gns3-launcher-icons &&  yaourt -S gns3-server &&  yaourt  -S vboxwrapper && yaourt usb-creator && yaourt diskscan-git
+
+#Instalar Virtualbox
+sudo pacman -S virtualbox virtualbox-host-modules-arch
+
+### Configurações ###
+
+#Habilitar daemon sshd e cron
+sudo systemctl enable sshd && sudo systemctl start sshd
+sudo systemctl enable cronie && sudo systemctl start cronie
+
+#Configurar ssh
+Descomentar as linhas do arquivo /etc/ssh/sshd_config
+13:Port 22
+14:AddressFamily any
+15:ListenAddress 0.0.0.0
+19:Protocol 2
+38:SyslogFacility AUTH
+39:LogLevel INFO
+
+#Reiniciar serviço
+systemctl restart sshd
+
+#Permitir que o insync funcione
+sudo mv /usr/lib/insync/libfontconfig.so.1 /usr/lib/insync/libfontconfig.so.1.old
+
+# Retirar bell (barulho ao deletar alguma coisa a mais)
+rmmod pcspkr
+echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf
+
+# Ativar sinapse para iniciar junto com o sistema
+Synape >> Preferencias >> Tema >> Iniciar junto com o sistema
+
+#Configurar Vim (Com root)
+echo set background=dark >> /etc/vimrc
+echo syntax enable >> /etc/vimrc
+
+#Muda nível de utilização de swap de 60 para 20
+sudo sysctl vm.swappiness=20
+
+#Editar o arquivo
+sudo vim /etc/sysctl.d/99-sysctl.conf
+vm.swappiness=20
+
+#Alterar fonte do sistema
+Gerenciador de configurações >> Aparencia >> Fontes
+Canterell 9
+
+# Inicializar o protetor de tela automaticamente
+Gerenciador de configurações >> Sessão e inicialização >> Inicio automatico de aplicativos >> Adicionar 
+Nome: XScreenSaver
+Descrição: Inicia o protetor de tela
+Comando: xscreensaver -no-splash
+
+# Configurações do terminal xfce4
+xfce4-terminal >> editar >> preferencias 
+
+Geral
+Barra de rolagem: desabilitado
+Rolagem para trás: 10000
+
+Aparência
+Fonte: Monospace tamanho 9
+Imagem de fundo: fundo transparente 80
+
+Geometria padrão: Coluna 100 Linhas 30
+
+# Desativar inicio do pamac com sistema (aviso de atualizações)
+Gerenciador de configurações >> Sessão e inicialização >> Inicio automatico de aplicativos
+Desativar opção do pamac-tray
+
+# Configurar compose (efeitos de janelas)
+
+Gerenciador de configurações >> Ajustes do gerenciador de Janelas >> Compositor
+
+Desativar opção
+Mostrar sombra sobre janelas de doca
+
+Opções de opacidade
+Reduzir 8 rodadas de mouse a partir dos 100%
+
+# Configurar touchpad funcionar apenas quando não estiver com mouse
+Criar ou editar o arquivo
+vim /etc/udev/rules.d/01-touchpad.rules
+
+adicionar
+SUBSYSTEM=="input", KERNEL=="mouse[0-9]*", ACTION=="add", ENV{DISPLAY}=":0", ENV{XAUTHORITY}="/home/`$username`/.Xauthority", RUN+="/usr/bin/synclient TouchpadOff=1"
+SUBSYSTEM=="input", KERNEL=="mouse[0-9]*", ACTION=="remove", ENV{DISPLAY}=":0", ENV{XAUTHORITY}="/home/`$username`/.Xauthority", RUN+="/usr/bin/synclient TouchpadOff=0"
+
+Obs: Não esquecer de substituir o username para o usuário que esta logado.
+Funciona assim que salvar o arquivo.
+
+# Alterar papel de parede da tela de bloqueio
+O Antergos usar o light-locker, para Alterar a imagem de tela de bloqueio
+Quando a tela estiver bloqueada, clique no botão da direita superior e alterar o papel de parede que deseja.
+
+Caso queira adicionar ou remover imagens o programa usar o diretorio
+/usr/share/antergos/wallpapers/
+
+Proteções de tela que mais gostei
+https://www.diigo.com/item/note/267fx/85ki
+
+### Soluções ###
+
+# Fazer a steam funcionar, executar o comando
+
+$ find ~/.local/share/Steam/ \( -name "libgcc_s.so*" -o -name "libstdc++.so*" -o -name "libxcb.so*" -o -name "libgpg-error.so*" \) -print -delete
+Após atualizar executa-lo novamente
+
+# Linha que aparece na tela após instalar o docky
+
+Configurar compose (efeitos de janelas e configuração docker)
+Gerenciador de configurações >> Ajustes do gerenciador de Janelas >> Compositor
+
+Desativar opção
+Mostrar sombra sobre janelas de doca
+
+Opções de opacidade
+Reduzir 8 rodadas de mouse a partir dos 100%
+
+Faixa a cima do docky
+Configurações do docky >> Ativar a opção >> Desvanecer ao ocultar
+
+# Mouse fica invisível após computador suspender
+Criar o arquivo 
+/etc/X11/xorg.conf.d/90-cursoron.conf
+
+Adicionar o conteúdo
+#--makes mouse cursor re-appear
+Section "Device"
+    Identifier  "Device0"
+    Driver      "intel"
+    Option      "AccelMethod" "uxa"
+    Option      "SWCursor"    "on"
+EndSection
+#--
+
+Fazer logout e login
+
+# Alterar o editor de texto padrão 
+Clicar com o botão direito em um arquivo texto >> Propriedades >> Abrir com
+Apenas selecione o editor de texto desejado
+
+# Alto consumo de memoria RAM
+Sempre que suspender o sistema inciara com o processo do webkit “preso” sendo necessário fecha-lo.
+Solução esta no diigo 
+Titulo “Antergos consumindo muita memoria RAM após suspender”
+Tags “Linux Antergos Soluções XFCE lightdm Memória”
+
+
+### Restaurar backup ###
+
+Configurações do docker (ver imagens)
+https://drive.google.com/drive/folders/0B4Onidz5svZaaWRTaHV4T3pOYW8
+
+Restaurar paineis do XFCE (ver imagens)
+https://drive.google.com/drive/folders/0B4Onidz5svZacDZkRXdDeHR6dUE
+
+Configurações do speedy dial 2 https://drive.google.com/drive/folders/0B4Onidz5svZaaWRTaHV4T3pOYW8
+
+Restaurar bashrc sergei e root
+https://drive.google.com/drive/folders/0B4Onidz5svZacDZkRXdDeHR6dUE
+
+Migrar home antigo para usuário novo
+Migracao Home Linux
+
+Migrar arquivos de configuração básico
+Arquivos de configuracoes para restaurar Home 
+
+Configurar icones das pastas
+Editar o arquivo vim ~/.config/user-dirs.dirs
+Mudar pastas padrão conforme necessidade

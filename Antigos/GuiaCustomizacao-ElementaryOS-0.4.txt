@@ -1,0 +1,154 @@
+Elementary OS 0.4 Loki
+
+Fontes
+https://is.gd/GuxKK9 << elementaryOS Apps and Configs
+https://is.gd/W7cE67  << 11 Things To Do After Installing Elementary OS 0.4 Loki 
+https://is.gd/GlaC26  << Elementary OS 0.4 Loki Post Installation Guide/Tweaks
+
+
+### Instalação ### 
+
+# Instalar Google-chrome
+wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add - 
+sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+sudo apt update; sudo apt install google-chrome-stable -y
+
+# Instalar apps de rede e manutenção
+sudo apt install tcpdump iptraf-ng traceroute gufw nmap openssh-server htop remmina remmina-plugin-rdp freerdp-x11 rsync wireshark iotop atop pptpd 
+
+# Instalar apps multimídia
+sudo apt install youtube-dl picard lynx audacious vlc steam xboxdrv ffmpeg vlc gimp moc
+
+#Instalar suporte a arquivos compactados
+sudo apt install unace rar unrar p7zip-rar p7zip sharutils uudeview mpack arj cabextract lzip lunzip
+
+#Instalar Codecs
+sudo apt install ubuntu-restricted-extras ubuntu-restricted-addons libavcodec-extra libavcodec-extra
+
+# Instalar apps comuns
+sudo apt install vim docky usb-creator-gtk screenfetch keepass2 sysstat gsmartcontrol baobab synapse cmatrix inxi task ttf-mscorefonts-installer  cowsay bc luckybackup gns3 curl trash-cli variety mousepad gnome-system-monitor cups-pdf calibre xbacklight git gedit tree linux-firmware redshift redshift-gtk htop software-properties-common guake gdebi shutter qbittorrent acpi mono-complete kazam qbittorrent unetbootin 
+
+# Instalar Virtualbox
+sudo apt install virtualbox virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-additions-iso virtualbox-ext-pack -y
+
+# Instalar Notepadqq
+sudo add-apt-repository ppa:notepadqq-team/notepadqq
+sudo apt update; sudo apt install notepadqq -y
+
+# Instalar o tweaks
+sudo add-apt-repository ppa:philip.scott/elementary-tweaks
+sudo apt update; sudo apt install elementary-tweaks
+
+# Terminal tilix
+sudo add-apt-repository ppa:webupd8team/terminix
+sudo apt update; sudo apt install tilix -y
+
+# Instalar TLP para economizar bateria
+sudo add-apt-repository ppa:linrunner/tlp
+sudo apt update; sudo apt install tlp tlp-rdw; sudo tlp start
+
+#Limpar pacotes
+sudo apt -f install && sudo apt autoremove && sudo apt -y autoclean && sudo apt -y clean
+
+#Habilitar software da Canonical
+#sudo software-properties-gtk
+#Aba Outros software e selecione os dois itens da canonical
+
+#Plugins e Java
+#sudo apt-get install icedtea-7-plugin openjdk-7-jre 
+
+#Instalar java
+#sudo add-apt-repository ppa:webupd8team/java 
+#sudo apt-get update 
+#sudo apt-get install oracle-java8-installer
+#java -version
+
+### Configurações ###
+
+#Configurar senha root
+sudo su
+passwd root
+
+#Configurar Hot Corners
+#Configurações de Sistema >> Área de trabalho >> Hot Corners
+Esquerda Cima = Maximizar
+Direita Baixo = Minimizar
+Direita Cima = Visualização de multi tarefa 
+
+# Desativar o app armor
+sudo systemctl stop apparmor
+sudo systemctl disable apparmor
+
+# Configurar a linguagem
+System Settings >> Languagem & Regions
+Region: Brasil
+Formats: Brazil 
+
+# Ativar o clique duplo para abrir pasta
+System Settings >> Tweaks >> Files >> Single Click >> Disable
+
+# Redshift
+Iniciá-lo clicando no menu e ativar o autostart
+
+# Impedir que o samba consuma muito recursos
+sudo chmod 744 /usr/lib/gvfs/gvfsd-smb-browse
+
+# Gerar chave SSH
+ssh-keygen 
+
+# Mudar nível de utilização de swap de 60 para 40
+sudo sysctl vm.swappiness=40
+
+Alterar de forma definitivamente
+sudo sh -c “echo ‘vm.swappiness=40’ >> /etc/sysctl.conf”
+
+Para funcionar execute o ative e desative o touchpad usando o xinput
+xinput --list
+xinput --disable 13 (13 numero do touchpad)
+
+# Armazenar todos os logs da inicialização do sistema, editar e adicionar
+sudo sh -c "echo 'Storage=persistent' >> /etc/systemd/journald.conf"
+
+# Configurar Vim 
+sudo sh -c "echo 'set background=dark' >> /etc/vim/vimrc"
+sudo sh -c "echo 'syntax enable' >> /etc/vim/vimrc"
+
+Serviço de VPNBRQ não funciona via interface gráfica, necessário configurar via linha de comando, ver artigo salvo no diigo, alias utilizado
+alias vpnbrqon="sudo pon vpnbrqsp"
+alias vpnbrqoff="sudo poff vpnbrqsp"
+
+# Remover login sessão guest 
+sudo sh -c "echo 'allow-guest=false' >> /usr/share/lightdm/lightdm.conf.d/40-pantheon-greeter.conf"
+
+#Habilitar restar da interface gráfica # fazer como root (sudo não resolve)
+echo 'XKBOPTIONS="terminate:ctrl_alt_bksp"' >> /etc/default/keyboard
+
+
+### Restaurar Backup ###
+
+Restaurar ~/.bashrc e o ~/.bash_aliases sergei e root
+Procedimento antigo (06/2017) https://goo.gl/uJWUoS
+
+Migrar home antigo para usuário novo
+Migracao Home Linux
+
+Migrar arquivos de configuração básico
+Arquivos de configuracoes para restaurar Home 
+
+
+
+Abrir o arquivo
+vim ~/.config/user-dirs.dirs
+
+Deixar com o seguinte conteudo
+XDG_DOWNLOAD_DIR="$HOME/Downloads"
+XDG_MUSIC_DIR="$HOME/Musicas"
+XDG_PICTURES_DIR="$HOME/"
+XDG_VIDEOS_DIR="$HOME/Videos"
+XDG_TEMPLATES_DIR="$HOME/"
+XDG_PUBLICSHARE_DIR="$HOME/"
+XDG_DOCUMENTS_DIR="$HOME/"
+
+
+
+

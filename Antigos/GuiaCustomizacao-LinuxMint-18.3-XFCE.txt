@@ -1,0 +1,333 @@
+Linux Mint 18.3 Sylvia - XFCE
+
+Fontes:
+https://sites.google.com/site/easylinuxtipsproject/mint-cinnamon-first
+https://sites.google.com/site/easylinuxtipsproject/3
+https://sites.google.com/site/easylinuxtipsproject/4
+https://sites.google.com/site/easylinuxtipsproject/2
+https://www.youtube.com/watch?v=YxGp-XnCUao&t=506s
+
+### Instalação ### 
+
+# Instalar Placa de vídeo Nvidia GTX 960M
+sudo apt-add-repository ppa:graphics-drivers/ppa -y 
+sudo apt purge nvidia*  
+sudo apt update; sudo apt install nvidia-384 nvidia-prime nvidia-settings -y
+sudo reboot
+
+Obs: Testando com driver versão 390 conforme recomendado no site
+
+# Instalar Google-chrome
+wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add - 
+sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+sudo apt update; sudo apt install google-chrome-stable -y
+
+# Instalar o tema Numix
+sudo apt-add-repository ppa:numix/ppa -y && sudo apt update && sudo apt install numix-icon-theme numix-icon-theme-circle -y
+
+# Instalar apps de rede e manutenção 
+sudo apt install tcpdump iptraf-ng traceroute gufw nmap openssh-server htop remmina remmina-plugin-rdp freerdp-x11 rsync wireshark iotop atop pptpd -y
+
+# Instalar apps multimídia
+sudo apt install youtube-dl picard lynx audacious vlc steam xboxdrv ffmpeg vlc gimp moc
+
+# Instalar apps comuns
+sudo apt install vim docky usb-creator-gtk screenfetch keepass2 sysstat gsmartcontrol baobab synapse cmatrix inxi task ttf-mscorefonts-installer cowsay bc luckybackup curl trash-cli variety mousepad gnome-system-monitor xfce4-goodies cups-pdf calibre git gedit tree linux-firmware redshift redshift-gtk gdebi acpi 
+
+# Instalar Notepadqq
+sudo add-apt-repository ppa:notepadqq-team/notepadqq
+sudo apt update
+sudo apt install notepadqq -y
+
+# Instalar Virtualbox
+sudo apt install virtualbox virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-additions-iso virtualbox-ext-pack
+
+#Instalar Codecs
+sudo apt install ubuntu-restricted-extras ubuntu-restricted-addons libavcodec-extra libavcodec-extra
+
+# Instalar as fontes da Microsoft
+wget http://ftp.de.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb
+sudo dpkg -i ttf-mscorefonts-installer_3.6_all.deb 
+
+# Terminal tilix
+sudo add-apt-repository ppa:webupd8team/terminix
+sudo apt update; sudo apt install tilix -y
+
+#Limpar pacotes
+sudo apt -f install && sudo apt autoremove && sudo apt -y autoclean && sudo apt -y clean
+
+### Configurações ###
+
+# Atualizar o Grub para funcionar com driver nvidia
+Edite o arquivo
+$ sudo vi /etc/default/grub
+Altera a linha
+DE: GRUB_CMDLINE_LINUX=""
+PARA: GRUB_CMDLINE_LINUX="acpi_backlight=native acpi_osi="
+$ sudo update-grub
+$ reboot
+https://goo.gl/DCMf6L
+
+Ativar a placa de vídeo modo onboard
+# sudo prime-select intel
+
+# Instalar e Configurar o Bumblebee (Salvo no Evernote)
+https://goo.gl/11S29u
+https://goo.gl/Re4yqR
+
+# Resolver problema da placa de vídeo para hibernar
+adicionar no /etc/rc.local
+/usr/bin/nvidia-smi -pm 1
+https://goo.gl/TNyMpd
+
+### Atualizar driver da placa wireless ###
+sudo apt install linux-firmware
+
+Criar o script 
+$ sudo vim /usr/local/bin/corrige-wireless.sh
+
+#!/bin/bash
+rmmod ath10k_pci
+sleep 2
+modprobe -v ath10k_pci
+
+Alterar permissão  do script
+$ sudo chmod 775 /usr/local/bin/corrige-wireless.sh
+
+Adicionar no bashrc
+alias corrigewireless='sudocorrige-wireless.sh'
+-
+Pronto, agora digitando 
+$ desativaipv6
+
+Fonte nota Evernote com mais detalhes do problema
+“Driver wireless notebook novo sergei”
+https://goo.gl/WkzZzD
+
+# Configurar layout de data e hora que utilizo
+%a %d %b %H:%M 
+
+# Mudar atualizações do sistema no botão próximo do relógio
+Menu >> Gerenciador de atualizações >> Politica de atualizações 
+Alterar para:
+Apenas mantenha meu computador atualizações
+
+# Gerar chave SSH
+ssh-keygen 
+
+# Ativar aceleração de hardware do google-chrome 
+Chrome >> Opções  >> desativar aceleração de hardware
+
+# Desativar o app armor
+sudo systemctl stop apparmor
+sudo systemctl disable apparmor
+
+# Adicionar usuário no grupo vboxusers para não ocorrer mensagem de warning do usb
+sudo usermod -a -G vboxusers sergei
+
+# Configurar touchpad funcionar apenas quando não estiver com mouse
+Criar ou editar o arquivo
+sudo vim /etc/udev/rules.d/01-touchpad.rules
+
+Adicionar
+SUBSYSTEM=="input", KERNEL=="mouse[0-9]*", ACTION=="add", ENV{DISPLAY}=":0", ENV{XAUTHORITY}="/home/sergei/.Xauthority", RUN+="/usr/bin/synclient TouchpadOff=1"
+SUBSYSTEM=="input", KERNEL=="mouse[0-9]*", ACTION=="remove", ENV{DISPLAY}=":0", ENV{XAUTHORITY}="/home/sergei/.Xauthority", RUN+="/usr/bin/synclient TouchpadOff=0"
+
+Para funcionar execute o ative e desative o touchpad usando o xinput
+xinput --list
+xinput --disable 13 (13 numero do touchpad)
+xinput --enable 13
+
+# Personalizar o tema utilizado
+xfconf-query -c xfwm4 -p /general/theme -s Mint-Y-Darker
+xfconf-query -c xsettings -p /Net/ThemeName -s Mint-Y-Darker
+xfconf-query -c xsettings -p /Net/IconThemeName -s "Numix-Circle"
+
+Menu >> Temas >> Escolher os seguintes temas
+Bordas: Mint-Y-Dark
+Icones: Numix-Circle
+Controles: Mint-Y-Dark (Cor branca)
+
+# Configurações do terminal xfce4
+xfce4-terminal >> editar >> preferencias 
+
+Geral
+Barra de rolagem: desabilitado
+Rolagem para trás: 10000
+
+Aparência
+Imagem de fundo: fundo transparente 70
+
+Geometria padrão: Coluna 130 Linhas 30
+
+# Configurar terminar Tilix
+Aparẽncia
+Usar tema escuro
+
+Atalhos de teclado
+Sessão
+	Adicionar terminal a baixo: Alt + b
+	Adicionar terminal a direita: Alt + d
+Terminal
+	Maximizar terminal: Alt + f
+
+Padrão
+Geral
+Tamanho do terminal: Coluna 140 Linhas 34 (Monitor FullHD)
+Tamanho do terminal: Coluna 100 Linhas 20 (Monitor HD)
+
+Comando
+	Executar comando como um shell de login, ativar (Fonte: https://goo.gl/5yBrnk)
+Cor
+	Transparência: arrastar para o ínicio do botão acima, avançar.
+Rolagem
+	Desativar barra de rolagem
+
+# Configurar compose (efeitos de janelas)
+Gerenciador de configurações >> Ajustes do gerenciador de Janelas >> Compositor
+Mostrar sombra sobre janelas de doca (Desativar opção)
+
+# Desativar as notificações de volumes
+Meno >> Notificações >> Aplicativos
+Xfce Volume Daemon Desativar
+
+# Atualizar icones da área de trabalho
+Desktop >> Botão Direito >> Configurações de área de trabalho >> Ícones
+Home - Desativar
+Lixeira - Ativar 
+
+# Configurar Vim 
+sudo sh -c "echo 'set background=dark' >> /etc/vim/vimrc"
+sudo sh -c "echo 'syntax enable' >> /etc/vim/vimrc"
+
+# Configurar para o Mint instalar todas as dependẽncais  
+Menu >> Gerenciador de pacotes Synaptic >> Configurações >> Preferencias >> tab Geral >> Menu Marcação de alterações >> Ativar Consider recommended packages as dependencies
+
+Execute no terminal
+sudo sed -i 's/false/true/g' /etc/apt/apt.conf.d/00recommends
+
+# Mudar nível de utilização de swap de 60 para 10
+sudo sysctl vm.swappiness=10
+
+Alterar de forma definitivamente
+sudo sh -c “echo ‘vm.swappiness=10’ >> /etc/sysctl.conf”
+
+# Ativar sinapse para iniciar junto com o sistema 
+Menu >> Synape >> Preferencias >> Iniciar junto com o sistema
+
+# Ativar o redshift
+Menu >> redshift >> Iniciar automaticamente
+
+# Configurar acesso do redshift ao geoclue
+sudo sh -c "echo '[redshift]' >> /etc/geoclue/geoclue.conf"
+sudo sh -c "echo 'allowed=true' >> /etc/geoclue/geoclue.conf"
+sudo sh -c "echo 'system=false' >> /etc/geoclue/geoclue.conf"
+sudo sh -c "echo 'users=' >> /etc/geoclue/geoclue.conf"
+
+# Desativar a hibernação do sistema
+sudo mv -v /etc/polkit-1/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla /
+
+# Desativar aplicativos da inicialização
+Menu >> Sessão
+- Bluetooth Manager
+- Mintwelcome
+
+# Armazenar todos os logs da inicialização do sistema, editar e adicionar
+sudo sh -c "echo 'Storage=persistent' >> /etc/systemd/journald.conf"
+
+# Criar scripts customizados (estão no diigo)
+desativa-ipv6.sh
+
+
+# Configurar VPN BRQ
+Segue o modelo do site: https://goo.gl/VdYaZg
+Exemplo de configuração: https://goo.gl/QJxmM1
+
+
+Instalando e configurando o bumblebee para funcionar o driver Nvidia
+
+1 - Baixando os pacotes
+# sudo add-apt-repository ppa:bumblebee/testing 
+# sudo apt update; sudo apt install bumblebee -y
+
+2 - Configurar o Bumblebbe
+2.1 - Verificar o driver da nvidia que esta instalando
+# lspci -nnk | grep -i 3d -A3
+02:00.0 3D controller [0302]: NVIDIA Corporation GM107M [GeForce GTX 960M] [10de:139b] (rev a2)
+	Subsystem: Dell GM107M [GeForce GTX 960M] [1028:0706]
+	Kernel driver in use: nvidia
+	Kernel modules: nvidiafb, nouveau, nvidia_384_drm, nvidia_384
+
+2.1 - Fazer backup do arquivo bumblebee original
+# sudo cp /etc/bumblebee/bumblebee.conf /etc/bumblebee/bumblebee.conf.ori
+
+2.2 - Editar arquivo do bumblebbe
+# sudo vim /etc/bumblebee/bumblebee.conf
+
+Alterar todas as configurações para a versão do driver utilizada (nesse exemplo 384)
+Driver=nvidia
+KernelDriver=nvidia-384
+PMMethod=bbswitch
+LibraryPath=/usr/lib/nvidia-384:/usr/lib32/nvidia-384
+XorgModulePath=/usr/lib/nvidia-384/xorg,/usr/lib/xorg/modules
+
+3 - Adicionar módulos da Nvidia na blacklist
+3.1 - Edite o arquivo
+sudo vim /etc/modprobe.d/bumblebee.conf
+
+3.2 - Adicione na blacklist as configuração da versão do driver utilizada (nesse exemplo 384)
+blacklist nvidia-384
+blacklist nvidia-384-updates 
+blacklist nvidia-experimental-384
+-
+Observação:
+Existe a possibilidade do driver já está configurada no arquivo
+-
+4 - Ative a placa onboard
+Após as configurações ative a placa de vídeo onboar como primária
+sudo prime-select intel
+-
+5 - Reiniciar o computador
+reboot
+
+6 - Configurar um jogos da Steam para usar o Bumblebbee
+Abrir a steam 
+Clicar no jogo com o botão direito
+Set lauch Options
+Adicionar
+LD_PRELOAD="libpthread.so.0 libGL.so.1" __GL_THREADED_OPTIMIZATIONS=1 optirun %command%
+
+
+### Restaurar Backup ###
+
+Restaurar ~/.bashrc e o ~/.bash_aliases sergei e root
+Procedimento antigo (06/2017) https://goo.gl/uJWUoS
+
+Configurações do docker (ver imagens)
+https://drive.google.com/drive/folders/0B4Onidz5svZaaWRTaHV4T3pOYW8
+
+Migrar home antigo para usuário novo
+Migracao Home Linux
+
+Migrar arquivos de configuração básico
+Arquivos de configuracoes para restaurar Home 
+
+Configurar icones das pastas (deve ser apenas depois de restaurar o backup)
+Editar o arquivo vim ~/.config/user-dirs.dirs
+Mudar pastas padrão conforme necessidade
+
+Padrão utilizado em casa 20180128
+XDG_DESKTOP_DIR="$HOME/Desktop"
+XDG_DOWNLOAD_DIR="$HOME/Midias/Downloads"
+XDG_PUBLICSHARE_DIR="$HOME/"
+XDG_MUSIC_DIR="$HOME/Midias/Musicas/"
+XDG_VIDEOS_DIR="$HOME/Midias/Videos/"
+XDG_TEMPLATES_DIR="$HOME/"
+XDG_DOCUMENTS_DIR="$HOME/"
+XDG_PICTURES_DIR="$HOME/"
+
+Obs: As vezes usando o DESKTOP no diretório “Área de trabalho” pode dar problema, não conseguir mapear a solução mais fácil é renomear a pasta Área de trabalho para Desktop e colocar o xdg omo
+XDG_DESKTOP_DIR="$HOME/desktop"
+
+Informações extras sobre o XDG openb https://goo.gl/xR3FBS 
+Após alteração reiniciar o computador

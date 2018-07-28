@@ -1,0 +1,257 @@
+Manjaro 17.02 - I3 - Trabalho
+
+Se for migração de computador, copiar a pasta Midia antes de tudo
+
+### Instalação ###
+# Instalar Google-chrome
+yaourt -S google-chrome 
+
+# Instalar vim
+sudo pacman -S vim xfce4-terminal
+
+#Atualizar o sistema
+sudo pacman -Syyuu
+
+#Instalar programas específicos bash 
+yaourt -S highlight atool lynx feh mplayer trash-cli task zip unzip moc ranger w3m  elinks poppler 
+
+# Instalar fontes
+sudo pacman -S ttf-bitstream-vera ttf-dejavu ttf-droid ttf-inconsolata ttf-indic-otf ttf-liberation && yaourt -S ttf-win7-fonts ttf-office-2007-fonts 
+
+#Instalar firefox e complemento do java
+sudo pacman -S firefox icedtea-web
+
+#Instalar apps de rede
+sudo pacman -S tcpdump iptraf-ng nethogs traceroute nmap openssh htop remmina freerdp hping dnsutils wireshark-cli wireshark-gtk
+
+#Instalar apps multimidia
+sudo pacman -S youtube-dl picard lynx curl vlc
+
+#Instalar apps comuns
+sudo pacman -S screenfetch galculator sysstat iotop gsmartcontrol baobab qpdfview transmission-gtk variety boinc xf86-input-synaptics shutter libreoffice-fresh keepassx unetbootin dropbox vince 
+yaourt -S notepadqq && yaourt -S xmind && yaourt -S yed && yaourt -S usb-creator && yaourt -S luckybackup && yaourt usb-creator && yaourt furiusisomount && yaourt diskscan-git (não encontrado) 
+
+#Instalar Virtual box
+sudo pacman -S virtualbox virtualbox-guest-dkms virtualbox-guest-utils
+
+#Instalar GNS
+yaourt -S gns3-server && yaourt -S gns3-gui && yaourt -S vboxwrapper && yaourt -S dynamips
+
+#Instalar Funny apps
+sudo pacman -S cmatrix cowsay nyancat && yaourt -S fortune-mod-br 
+
+### Configurações ###
+
+#Fazer backup das configurações do i3
+sudo cp /etc/i3/config /etc/i3/config.ori
+sudo cp /etc/i3status.conf /etc/i3status.conf.ori
+cp ~/.i3/config ~/.i3/conf.ori
+cp ~/.i3status.conf ~/.i3status.conf.ori
+cp ~/.bashrc ~/.bashrc.ori 
+
+# Alterar terminal default
+Editar o arquivo ~/.i3/config
+De: bindsym $mod+Return exec i3-sensible-terminal
+Para: bindsym $mod+Return exec xfce4-terminal
+
+#Configurar xfce4-terminal
+Editar >> Preferencias 
+Geral
+Barra de rolagem é: Desabilitado
+Aparência
+Fonte: Monospace Tamanho:10
+Imagem de fundo: Transparente Nível: 0,50 a 0,60 (mais utilizado 60)
+Permitir texto em negrito: Marcar
+Mostrar barra de menu  em novas janelas: Desmarcar
+Mostrar bordas ao redor de novas janelas: Marcar
+
+#Configurar Vim (Com root)
+echo set background=dark >> /etc/vimrc
+echo syntax enable >> /etc/vimrc
+
+#Muda nível de utilização de swap para 10
+sudo sysctl vm.swappiness=5
+
+#Editar o arquivo
+sudo vim /etc/sysctl.d/100-manjaro.conf
+sysctl vm.swappiness=5
+
+#Alterar tema do moc
+Editar o arquivo ~/.moc/config, adicionar
+Theme=/usr/share/moc/themes/transparent-background
+
+#Configurar inicialização
+Editar o arquivo vim ~/.i3/config e procurar a linha que contenha Autostart application
+
+Ativar Variety  (próximo da linha 282)
+exec --no-startup-id variety
+
+#Configurar para shutter funcionar por atalho $mod+i, adicionar (linha 71)
+bindsym $mod+i exec shutter -s &
+
+#Desativar captura de teclado automatico Virtual Box
+Virtualbox >> Arquivo >> Preferência >> Entrada >> Captura de teclado automatico >> Desmarcar
+
+#Terminal colorido 
+usuário root (vermelho e azul)  
+Adicionar no arquivo /root/.bashrc
+
+PS1="[\[$(tput sgr0)\]\[\033[38;5;9m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\[\033[38;5;45m\]\W\[$(tput sgr0)\]\[\033[38;5;15m\]]\\$ \[$(tput sgr0)\]"
+
+sergei (verde e azul)
+
+Adicionar no arquivo ~/.bashrc
+PS1="[\[$(tput sgr0)\]\[\033[38;5;41m\]\u@\h\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\[\033[38;5;45m\]\W\[$(tput sgr0)\]\[\033[38;5;15m\]]\\$ \[$(tput sgr0)\]"
+Fonte: http://bashrcgenerator.com/
+
+#Configurar ssh
+Descomentar as linhas do arquivo /etc/ssh/sshd_config
+13:Port 22
+14:AddressFamily any
+15:ListenAddress 0.0.0.0
+28:SyslogFacility AUTH
+27:LogLevel INFO
+
+Reiniciar serviço
+sudo systemctl restart sshd
+
+#Habilitar sshd
+sudo systemctl enable sshd && sudo systemctl start sshd
+
+Customização do ~/.bashrc (Restaurar do arquivo de backup)
+#Configurar bashrc
+Mudar editor padrão
+22:export EDITOR=/usr/bin/vim (se não existir criar)
+23 export BROWSER=/usr/bin/google-chrome-stable
+
+#Sergei
+alias mountpen1='sudo mount -t vfat -o umask=0000 /dev/sdb1 /mnt/pen'
+alias mountpen2='sudo mount -t vfat -o umask=0000 /dev/sdc1 /mnt/pen'
+alias mounthd1='sudo mount -o umask=0000 /dev/sdb1 /mnt/hd'
+alias mounthd2='sudo mount -o umask=0000 /dev/sdb2 /mnt/hd'
+alias mountdvd='mount -t iso9660 /dev/cdrom /mnt/cd'
+alias i3lock='i3lock -c 000000'
+alias block='light-locker-command -l'
+alias cp='cp -v'
+alias rm='rm -i'
+alias som0='amixer -D pulse sset Master 5%-| grep -i playback | grep -i [[]on[]]'
+alias som1='amixer -D pulse sset Master 5%+| grep -i playback | grep -i [[]on[]]'
+alias touch1='/usr/bin/synclient TouchpadOff=0'
+alias touch0='/usr/bin/synclient TouchpadOff=1'
+alias kpcli='kpcli --kdb=/home/smartao/Referencias/BRQ.kdbx'
+alias cmatrix='cmatrix -b -u 9 -s'
+alias limpamemoria='sudo swapoff -a && sudo swapon -a'
+alias tasks='task smartao'
+alias rmt='trash-put'
+alias confteclado='sudo setxkbmap -model abnt2 -layout br -variant abnt2'
+alias conftecladoibm='setxkbmap -model thinkpad60 -layout br'
+alias restarti3="i3-msg restart"
+alias ssh1="ssh -p 2222 root@10.2.1.100"
+alias reboot="echo 'tem certeza de reiniciar?'"
+
+Customizar configurações do i3status
+https://www.diigo.com/item/note/267fx/uryi
+
+# Criar chave publica e compartilhar com srpserver1072
+ssh-keygen -b 1024 -t rsa
+ssh-copy-id -i ~/.ssh/id_rsa.pub ‘root@10.2.1.100 -p 2222’
+
+# Configurar ícones das pastas pessoais
+Se o arquivo ~/.config/user-dirs.dirs não existir, executar o comando
+xdg-user-dirs-update
+
+Fazer backup das configurações
+sudo cp ~/.config/user-dirs.dirs ~/.config/user-dirs.dirs.bkp
+
+Depois, editar o arquivo criado, conforme preferencia
+XDG_DESKTOP_DIR="$HOME/Inbox"
+XDG_DOWNLOAD_DIR="$HOME/Midia/Downloads"
+XDG_TEMPLATES_DIR="$HOME/"
+XDG_PUBLICSHARE_DIR="$HOME/"
+XDG_DOCUMENTS_DIR="$HOME/"
+XDG_MUSIC_DIR="$HOME/Midia/Musicas"
+XDG_PICTURES_DIR="$HOME/Midia/Imagens"
+XDG_VIDEOS_DIR="$HOME/Midia/Videos"
+
+
+Para atualizar os diretorios use o comando
+xdg-user-dirs-update
+https://wiki.archlinux.org/index.php/Xdg_user_directories
+
+Remover pastas não utilizadas
+rmdir Documentos/ Downloads/ Imagens/ Modelos/ Música Público/ Vídeos/ Screenshots/
+
+Migrar home antigo para usuário novo
+Migracao Home Linux
+
+Migrar arquivos de configuração básico
+Arquivos de configuracoes para restaurar Home 
+
+#Configurar boinc
+https://www.diigo.com/item/note/267fx/cbwi
+
+Configurações utilizadas PARADO AQUI
+vim /var/lib/boinc/global_prefs_override.xml
+
+<global_preferences>
+   <run_on_batteries>0</run_on_batteries>
+   <run_if_user_active>1</run_if_user_active>
+   <run_gpu_if_user_active>0</run_gpu_if_user_active>
+   <idle_time_to_run>3.000000</idle_time_to_run>
+   <suspend_cpu_usage>25.000000</suspend_cpu_usage>
+   <start_hour>17.500000</start_hour>
+   <end_hour>8.500000</end_hour>
+   <net_start_hour>0.000000</net_start_hour>
+   <net_end_hour>0.000000</net_end_hour>
+   <leave_apps_in_memory>0</leave_apps_in_memory>
+   <confirm_before_connecting>1</confirm_before_connecting>
+   <hangup_if_dialed>0</hangup_if_dialed>
+   <dont_verify_images>0</dont_verify_images>
+   <work_buf_min_days>0.100000</work_buf_min_days>
+   <work_buf_additional_days>0.500000</work_buf_additional_days>
+   <max_ncpus_pct>85.000000</max_ncpus_pct>
+   <cpu_scheduling_period_minutes>60.000000</cpu_scheduling_period_minutes>
+   <disk_interval>60.000000</disk_interval>
+   <disk_max_used_gb>1.000000</disk_max_used_gb>
+   <disk_max_used_pct>100.000000</disk_max_used_pct>
+   <disk_min_free_gb>0.000000</disk_min_free_gb>
+   <vm_max_used_pct>75.000000</vm_max_used_pct>
+   <ram_max_used_busy_pct>50.000000</ram_max_used_busy_pct>
+   <ram_max_used_idle_pct>80.000000</ram_max_used_idle_pct>
+   <max_bytes_sec_up>0.000000</max_bytes_sec_up>
+   <max_bytes_sec_down>0.000000</max_bytes_sec_down>
+   <cpu_usage_limit>55.000000</cpu_usage_limit>
+   <daily_xfer_limit_mb>0.000000</daily_xfer_limit_mb>
+   <daily_xfer_period_days>0</daily_xfer_period_days>
+   <day_prefs>
+      <day_of_week>0</day_of_week>
+      <start_hour>0.00</start_hour>
+      <end_hour>23.98</end_hour>
+    </day_prefs>
+   <day_prefs>
+      <day_of_week>6</day_of_week>
+      <start_hour>0.00</start_hour>
+      <end_hour>23.98</end_hour>
+   </day_prefs>
+</global_preferences>
+
+#Configurar VPN BRQ
+Menu de rede proximo do relogio >> Conexões VPN >> Configurar VPN...
+
+
+# Solução do notebook ficar sem audio
+alsamixer
+
+Verificar se alguma barra esta com MM que significa que esta mudo
+Apertar a tecla M para retirar do mudo
+https://wiki.archlinux.org/index.php/Advanced_Linux_Sound_Architecture#Unmute_with_alsamixer
+
+
+Apenas restaurar o arquivo de backup
+
+
+
+Criar links simbólicos (após sincronização do Dropbox)
+ln -s /home/smartao/Dropbox/BRQ/Inbox/ /home/smartao/
+ln -s /home/smartao/Dropbox/BRQ/Referencias/ /home/smartao/
+ln -s /home/smartao/Dropbox/BRQ/Projetos/ /home/smartao/
